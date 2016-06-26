@@ -1,2 +1,2 @@
 // jar包的名字
-archivesBaseName = 'core'
+archivesBaseName = 'boj-core'
