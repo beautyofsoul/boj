@@ -12,32 +12,37 @@ subprojects {
     apply plugin: 'java'
     apply plugin: 'eclipse'
     apply plugin: 'idea'
-    
-    version = '1.0' 
-    
+
+    version = '1.0'
+
     // JVM 版本号要求
     sourceCompatibility = 1.8
     targetCompatibility = 1.8
-    
+
     // java编译的时候缺省状态下会因为中文字符而失败
-    [compileJava,compileTestJava,javadoc]*.options*.encoding = 'UTF-8'
-    
+    [compileJava, compileTestJava, javadoc]*.options*.encoding = 'UTF-8'
+
     repositories {
         mavenCentral()
-    } 
-    
+    }
+
     jar {
         manifest {
             attributes("Implementation-Title": "Gradle")
         }
     }
-    
-    
+
     // In this section you declare the dependencies for your production and test code
     dependencies {
-       // The production code uses the SLF4J logging API at compile time
-       compile 'org.slf4j:slf4j-api:1.7.21'
-       testCompile 'junit:junit:4.12'
+        // The production code uses the SLF4J logging API at compile time
+        compile 'org.slf4j:slf4j-api:1.7.21'
+        testCompile 'org.junit.platform:junit-platform-commons:1.0.0-M1'
+        testCompile 'org.junit.platform:junit-platform-console:1.0.0-M1'
+        testCompile 'org.junit.platform:junit-platform-engine:1.0.0-M1'
+        testCompile 'org.junit.platform:junit-platform-gradle-plugin:1.0.0-M1'
+        testCompile 'org.junit.platform:junit-platform-launcher:1.0.0-M1'
+        testCompile 'org.junit.platform:junit-platform-runner:1.0.0-M1'
+        testCompile 'org.junit.platform:junit-platform-surefire-provider:1.0.0-M1'
     }
 }
 

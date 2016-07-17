@@ -17,4 +17,7 @@ include 'services:webservice'
 */
 include 'core'
 include 'nutch'
+include 'servlet'
 rootProject.name = 'boj'
+include 'servlet'
+
