@@ -36,6 +36,9 @@ subprojects {
     dependencies {
         // The production code uses the SLF4J logging API at compile time
         compile 'org.slf4j:slf4j-api:1.7.21'
+        compile group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: '2.6.2'
+        compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.6.2'
+        compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.6.2'
         testCompile 'org.junit.platform:junit-platform-commons:1.0.0-M1'
         testCompile 'org.junit.platform:junit-platform-console:1.0.0-M1'
         testCompile 'org.junit.platform:junit-platform-engine:1.0.0-M1'
