@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>WebsocketBot</title>
+    <style>
+        body {
+            background-color: #ffffff;
+            font-size: 12px;
+            font-family: Verdana, "Verdana CE", Arial, "Arial CE", "Lucida Grande CE", lucida, "Helvetica CE", sans-serif;
+            color: #000000;
+            margin: 10px;
+        }
+
+        h1 {
+            font-family: Arial, "Arial CE", "Lucida Grande CE", lucida, "Helvetica CE", sans-serif;
+            border-bottom: 1px solid #AFAFAF;
+            font-size: 16px;
+            font-weight: bold;
+            margin: 0px;
+            padding: 0px;
+            color: #D20005;
+        }
+
+        a:link, a:visited {
+            color: #045491;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        a:link:hover, a:visited:hover {
+            color: #045491;
+            font-weight: bold;
+            text-decoration: underline;
+        }
+
+    </style>
+    <script>
+        var wsocket;
+        var userName;
+        var textarea;
+        var wsconsole;
+        var userlist;
+
+        function connect() {
+            textarea = document.getElementById("textarea");
+            wsconsole = document.getElementById("wsconsole");
+            userlist = document.getElementById("userlist");
+            wsocket = new WebSocket("ws://127.0.0.1:8080/boj-websocket-1.0/websocketbot/websocketbot");
+            wsocket.onmessage = onMessage;
+            document.getElementById("name").focus();
+            document.getElementById("consolediv").style.visibility = "hidden";
+        }
+
+        function onMessage(evt) {
+            var line = "";
+            var msg = JSON.parse(evt.data);
+            if (msg.type == "chat") {
+                line = msg.name + ".";
+                if (msg.target.length > 0) {
+                    line += "@" + msg.target + " ";
+                }
+                line += msg.message + "\n";
+                textarea.value += "" + line;
+            }
+            else if (msg.type === "info") {
+                line = "[--" + msg.info + "--]\n";
+                textarea.value += "" + line;
+            }
+            else if (msg.type === "users") {
+                line = "Users:\n";
+                for (var i = 0; i < msg.userlist.length; i++)
+                    line += "-" + msg.userlist[i] + "\n";
+                /* Update the user list area */
+                userlist.value = line;
+            }
+            textarea.scrollTop = 999999;
+            wsconsole.value += "-> " + evt.data + "\n";
+            wsconsole.scrollTop = 999999;
+        }
+
+        function sendJoin() {
+            var input = document.getElementById("input");
+            var name = document.getElementById("name");
+            var join = document.getElementById("join");
+            var jsonstr;
+            if (name.value.length > 0) {
+                /* Create a message as a JavaScript object */
+                var joinMsg = {};
+                joinMsg.type = "join";
+                joinMsg.name = name.value;
+                /* Convert the message to JSON */
+                jsonstr = JSON.stringify(joinMsg);
+                /* Send the JSON text */
+                wsocket.send(jsonstr);
+                /* Disable join controls */
+                name.disabled = true;
+                join.disabled = true;
+                input.disabled = false;
+                userName = name.value;
+                /* Update the Websocket console area */
+                wsconsole.value += "<- " + jsonstr + "\n";
+                wsconsole.scrollTop = 999999;
+            }
+        }
+
+        function sendMessage(evt) {
+            var input = document.getElementById("input");
+            var jsonstr;
+            var msgstr;
+            if (evt.keyCode === 13 && input.value.length > 0) {
+                /* Create a chat message as a JavaScript object */
+                var chatMsg = {};
+                chatMsg.type = "chat";
+                chatMsg.name = userName;
+                msgstr = input.value;
+                chatMsg.target = getTarget(msgstr.replace(/,/g, ""));
+                chatMsg.message = cleanTarget(msgstr);
+                chatMsg.message = chatMsg.message.replace(/(\r\n|\n|\r)/gm, "");
+                /* Convert the object to JSON */
+                jsonstr = JSON.stringify(chatMsg);
+                /* Send the message as JSON text */
+                wsocket.send(jsonstr);
+                input.value = "";
+                /* Update the Websocket console area */
+                wsconsole.value += "<- " + jsonstr + "\n";
+                wsconsole.scrollTop = 999999;
+            }
+        }
+
+        function checkJoin(evt) {
+            var name = document.getElementById("name");
+            var input = document.getElementById("input");
+            if (evt.keyCode === 13 && name.value.length > 0) {
+                sendJoin();
+                input.focus();
+            }
+        }
+
+        function getTarget(str) {
+            var arr = str.split(" ");
+            var target = "";
+            for (var i = 0; i < arr.length; i++) {
+                if (arr[i].charAt(0) === '@') {
+                    target = arr[i].substring(1, arr[i].length);
+                    target = target.replace(/(\r\n|\n|\r)/gm, "");
+                }
+            }
+            return target;
+        }
+
+        function cleanTarget(str) {
+            var arr = str.split(" ");
+            var cleanstr = "";
+            for (var i = 0; i < arr.length; i++) {
+                if (arr[i].charAt(0) !== '@')
+                    cleanstr += arr[i] + " ";
+            }
+            return cleanstr.substring(0, cleanstr.length - 1);
+        }
+
+        function showHideConsole() {
+            var chkbox = document.getElementById("showhideconsole");
+            var consolediv = document.getElementById("consolediv");
+            if (chkbox.checked)
+                consolediv.style.visibility = 'visible';
+            else
+                consolediv.style.visibility = 'hidden';
+        }
+
+        window.addEventListener("load", connect, false);
+
+    </script>
+</head>
+<body>
+<h1>WebsocketBot</h1>
+Your name: <input id="name" type="text" size="20" maxlength="20" onkeyup="checkJoin(event);"/>
+<input type="submit" id="join" value="Join!" onclick="sendJoin();"/><br/>
+<textarea id="input" cols="70" rows="1" disabled
+          onkeyup="sendMessage(event);"></textarea><br/>
+<textarea id="textarea" cols="70" rows="20" readonly></textarea>
+<textarea id="userlist" cols="20" rows="20" readonly></textarea>
+<br/><br/><br/>
+<input id="showhideconsole" type="checkbox" onclick="showHideConsole();"/>
+Show WebSocket console<br/>
+<div id="consolediv"><textarea id="wsconsole" cols="80" rows="8" readonly
+                               style="font-size:8pt;"></textarea></div>
+</body>
+</html>

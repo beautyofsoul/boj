@@ -18,6 +18,11 @@ include 'services:webservice'
 include 'core'
 include 'nutch'
 include 'servlet'
+include 'websocket'
 rootProject.name = 'boj'
-include 'servlet'
+
+findProject(':core')?.name = 'boj-core'
+findProject(':nutch')?.name = 'boj-nutch'
+findProject(':websocket')?.name = 'boj-websocket'
+findProject(':servlet')?.name = 'boj-servlet'
 
